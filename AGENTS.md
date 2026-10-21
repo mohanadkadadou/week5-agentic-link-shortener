@@ -19,7 +19,7 @@ git config core.hooksPath .githooks     # enable the pre-commit gate (once per c
 ## Where things live
 | Path | Purpose |
 |---|---|
-| `main.py` | the whole app: DB helpers, `encode()` (base62), `POST /shorten`, `GET /{code}` |
+| `main.py` | the whole app: DB helpers + migration, `encode()` (base62), `POST /shorten`, `GET /stats/{code}`, `GET /{code}` (counts a click) |
 | `test_main.py` | pytest suite using FastAPI `TestClient` |
 | `docs/TASKS.md` | backlog of small tasks |
 | `docs/PLAYBOOKS.md` | reusable prompts/workflows (test-and-summarize, new-endpoint) |
@@ -56,3 +56,5 @@ git config core.hooksPath .githooks     # enable the pre-commit gate (once per c
 - Tests share the real `links.db` (no isolation fixture). Run order must not matter; never assert on absolute codes like `"b"`.
 - `init_db()` runs at import time and only `CREATE TABLE IF NOT EXISTS`: an older `links.db` will **not** get new columns. Schema changes need an explicit migration in `init_db()`.
 - `short_url` is relative (`/<code>`): it has no host.
+- Needs SQLite >= 3.35 (`UPDATE ... RETURNING`); `main.py` fails fast at import otherwise.
+- A click = one `GET /{code}` that returned 307. `/stats/{code}` and 404s never count; prefetchers/bots can inflate counts (accepted).
