@@ -9,6 +9,7 @@ Run:
 Test:
     pytest
 """
+
 import sqlite3
 import string
 from contextlib import closing
