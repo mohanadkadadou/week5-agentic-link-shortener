@@ -1,0 +1,50 @@
+$ # Bad change #1: a regression (the agent "fixes" the redirect status code the wrong way)
+$ git diff --stat
+ main.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+$ git add -A && git commit -m "change redirect status"
+==> ruff check
+All checks passed!
+==> ruff format --check
+12 files already formatted
+==> pytest
+F..                                                                      [100%]
+=================================== FAILURES ===================================
+__________________________ test_shorten_and_redirect ___________________________
+    def test_shorten_and_redirect():
+        r = client.post("/shorten", json={"url": "https://example.com"})
+        assert r.status_code == 200
+        code = r.json()["code"]
+        assert code
+        r2 = client.get(f"/{code}", follow_redirects=False)
+>       assert r2.status_code == 307
+E       assert 302 == 307
+E        +  where 302 = <Response [302 Found]>.status_code
+test_main.py:14: AssertionError
+=========================== short test summary info ============================
+FAILED test_main.py::test_shorten_and_redirect - assert 302 == 307
+1 failed, 2 passed, 1 warning in 0.32s
+pre-commit: BLOCKED. Fix the failures above, then commit again.
+(git commit aborted by the hook; no commit was created)
+
+$ # Bad change #2: a lint error (unused import)
+$ git add -A && git commit -m "add import"
+==> ruff check
+F401 [*] `os` imported but unused
+  --> main.py:13:8
+   |
+11 | """
+12 |
+13 | import os
+   |        ^^
+14 | import sqlite3
+15 | import string
+   |
+help: Remove unused import: `os`
+   |
+12 |
+(git commit aborted by the hook; no commit was created)
+
+$ git log --oneline -1   # nothing new was committed
+2e623fe feat: make repo agent-native (AGENTS.md, intent.md, pre-commit gate, saved command, subagent definitions)
+?? docs/evidence/
