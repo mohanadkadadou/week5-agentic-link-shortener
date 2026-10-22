@@ -4,7 +4,7 @@ Instructions for any coding agent (Claude Code, Antigravity/Gemini, Codex, Curso
 Read `intent.md` first for *why* this service exists and what it must never do.
 
 ## What this is
-A tiny FastAPI + SQLite URL shortener. One module (`main.py`), one test file (`test_main.py`).
+A tiny FastAPI + SQLite URL shortener. One module (`main.py`), one test file (`tests/test_main.py`).
 
 ## Run, test, lint (copy-paste commands)
 ```bash
@@ -20,11 +20,12 @@ git config core.hooksPath .githooks     # enable the pre-commit gate (once per c
 | Path | Purpose |
 |---|---|
 | `main.py` | the whole app: DB helpers + migration, `encode()` (base62), `POST /shorten`, `GET /stats/{code}`, `GET /{code}` (counts a click) |
-| `test_main.py` | pytest suite using FastAPI `TestClient` |
+| `tests/test_main.py` | pytest suite using FastAPI `TestClient` |
 | `docs/TASKS.md` | backlog of small tasks |
 | `docs/PLAYBOOKS.md` | reusable prompts/workflows (test-and-summarize, new-endpoint) |
 | `.githooks/pre-commit` | blocks commits when lint, format or tests fail |
-| `.claude/commands/`, `.claude/agents/` | Claude Code saved command and the planner/implementer/reviewer subagents |
+| `tests/AGENTS.md` | scoped rules for test files only (loads when working under `tests/`) |
+| `.claude/skills/implement-feature/` | reusable feature workflow (skill); also `.claude/commands/`, `.claude/agents/` |
 | `links.db` | SQLite file created next to `main.py` at import time. **Git-ignored. Never commit it.** |
 
 ## Conventions
@@ -35,14 +36,14 @@ git config core.hooksPath .githooks     # enable the pre-commit gate (once per c
 - Keep `main.py` as a single small module unless a task says otherwise. No new dependencies without asking.
 
 ## Workflow: new endpoint or behaviour (follow in order)
-1. **Plan**: state the endpoint, request/response shape, status codes and DB changes. Wait for approval if the plan changes the schema.
-2. **Failing test first**: add a test in `test_main.py`, run `pytest -q`, and confirm it fails *for the right reason*.
+1. **Plan** (or run the `implement-feature` skill): state the endpoint, request/response shape, status codes and DB changes. Wait for approval if the plan changes the schema.
+2. **Failing test first**: add a test in `tests/test_main.py`, run `pytest -q`, and confirm it fails *for the right reason*.
 3. **Implement** the smallest change in `main.py`.
 4. **Run the hook/gate**: `scripts/check.sh` must pass. This is also what `git commit` runs.
 5. **Review** the diff (see `.claude/agents/reviewer.md`) before accepting.
 
 ## Safe vs. forbidden
-**Safe (no need to ask):** reading any file; `pytest`, `ruff check`, `ruff format`, `scripts/check.sh`; editing `main.py`, `test_main.py`, `docs/*`; `git status|diff|log|add|commit` on a feature branch.
+**Safe (no need to ask):** reading any file; `pytest`, `ruff check`, `ruff format`, `scripts/check.sh`; editing `main.py`, `tests/test_main.py`, `docs/*`; `git status|diff|log|add|commit` on a feature branch.
 
 **Ask first:** adding a dependency; changing the DB schema (a migration must keep existing `links.db` files working); renaming/removing an endpoint; `git push`.
 
