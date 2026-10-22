@@ -1,4 +1,4 @@
-# Link Shortener, made agent-native (Week 5)
+# Link Shortener, made agent-native (Week 4)
 
 FastAPI + SQLite URL shortener with `AGENTS.md`, `intent.md`, a pre-commit quality gate, a saved command and
 planner/implementer/reviewer subagents. See [`writeup.md`](writeup.md) for the artifacts, evidence and reflection.
